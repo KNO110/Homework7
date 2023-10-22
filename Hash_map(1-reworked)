@@ -1,0 +1,117 @@
+using System;
+using System.Collections.Generic;
+
+public class HashTable<Key, Value>
+{
+    private const int DefCapacity = 10;
+    private LinkedList<KeyValuePair<Key, Value>>[] buckets;
+    private int count;
+
+    public HashTable(int capacity = DefCapacity)
+    {
+        buckets = new LinkedList<KeyValuePair<Key, Value>>[capacity];
+    }
+
+    public void Add(Key key, Value value)
+    {
+        int index = get_index(key);
+        if (buckets[index] == null)
+        {
+            buckets[index] = new LinkedList<KeyValuePair<Key, Value>>();
+        }
+
+        foreach (var pair in buckets[index])
+        {
+            if (pair.Key.Equals(key))
+            {
+                throw new ArgumentException("Ключ уже содержится в таблице.-.");
+            }
+        }
+
+        buckets[index].AddLast(new KeyValuePair<Key, Value>(key, value));
+        count++;
+    }
+
+    public bool get_value(Key key, out Value value)
+    {
+        int index = get_index(key);
+        if (buckets[index] != null)
+        {
+            foreach (var pair in buckets[index])
+            {
+                if (pair.Key.Equals(key))
+                {
+                    value = pair.Value;
+                    return true;
+                }
+            }
+        }
+
+        value = default(Value);
+        return false;
+    }
+
+    public bool Remove(Key key)
+    {
+        int index = get_index(key);
+        if (buckets[index] != null)
+        {
+            var node = buckets[index].First;
+            while (node != null)
+            {
+                if (node.Value.Key.Equals(key))
+                {
+                    buckets[index].Remove(node);
+                    count--;
+                    return true;
+                }
+                node = node.Next;
+            }
+        }
+
+        return false;
+    }
+
+    public int Count
+    {
+        get { return count; }
+    }
+
+    private int get_index(Key key)
+    {
+        int hashCode = key.GetHashCode();
+        int index = Math.Abs(hashCode % buckets.Length);
+        return index;
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        HashTable<string, int> hashTable = new HashTable<string, int>();
+        hashTable.Add("двоешник", 1);
+        hashTable.Add("хех", 2);
+        hashTable.Add("абоба", 3);
+
+        int value;
+        if (hashTable.get_value("двоешник", out value))
+        {
+            Console.WriteLine("Значание по ключу двоешник: " + value);
+        }
+        else
+        {
+            Console.WriteLine("КЛЮЧ ДВОЕШНИК НЕ НАЙДЕН:(((((");
+        }
+
+        hashTable.Remove("хех");
+        if (hashTable.get_value("хех", out value))
+        {
+            Console.WriteLine("Значение по ключу хех: " + value);
+        }
+        else
+        {
+            Console.WriteLine("Ключ хех не найден после самовыпила...(");
+        }
+    }
+}
